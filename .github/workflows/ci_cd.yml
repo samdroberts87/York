@@ -25,6 +25,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: terraform-backend
+          
+      - name: List files in terraform-backend
+        run: ls -al terraform-backend
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
