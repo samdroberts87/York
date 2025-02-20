@@ -76,12 +76,12 @@ jobs:
 
       - name: Plan Terraform Changes
         working-directory: terraform
-        run: terraform plan -var "ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" -var-file=${{ github.event.inputs.environment }}.tfvars
+        run: terraform plan -var-file=${{ github.event.inputs.environment }}.tfvars
 
       - name: Apply Terraform (Only on Main)
         if: github.ref == 'refs/heads/main'
         working-directory: terraform
-        run: terraform apply -auto-approve -var "ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" -var-file=${{ github.event.inputs.environment }}.tfvars
+        run: terraform apply -auto-approve -var -var-file=${{ github.event.inputs.environment }}.tfvars
 
       - name: Get EC2 Public IP
         id: ec2-ip

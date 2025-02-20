@@ -43,4 +43,4 @@ jobs:
 
       - name: Destroy Terraform Resources (Main Infra)
         working-directory: terraform
-        run: terraform destroy -auto-approve -var "ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}" -var-file=terraform/${{ github.event.inputs.environment }}.tfvars
+        run: terraform destroy -auto-approve -var-file=terraform/${{ github.event.inputs.environment }}.tfvars
