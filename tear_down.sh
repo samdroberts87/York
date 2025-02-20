@@ -13,4 +13,6 @@ aws s3api list-object-versions --bucket "$BUCKET_NAME" --query "Versions[].[Key,
 
 echo "All versions have been deleted."
 
-cd "$BACKEND_PATH" && terraform destroy --auto-approve
+aws s3 rb s3://york-demo-tf-state-bucket-storage --force --region ${{ secrets.AWS_REGION }}
+
+echo "Bucket removed"
