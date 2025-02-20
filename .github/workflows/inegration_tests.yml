@@ -1,4 +1,4 @@
-name: Terraform Deployment
+name: CI Terraform Plan
 
 on:
   push:
