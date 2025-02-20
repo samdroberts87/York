@@ -28,9 +28,22 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Initialize Terraform (Local Backend)
+      - name: Mock the S3 Bucket (Temporary)
+        run: |
+            # Mock the existence of the S3 bucket for the terraform plan phase
+            BUCKET_EXISTS=$(aws s3api head-bucket --bucket york-demo-tf-state-bucket-storage --region ${{ secrets.AWS_REGION }} 2>&1 || true)
+            if [[ "$BUCKET_EXISTS" == *"NotFound"* ]]; then
+              echo "Bucket does not exist, creating a mock bucket for planning."
+              aws s3 mb s3://york-demo-tf-state-bucket-storage --region ${{ secrets.AWS_REGION }}
+              # Wait for a few seconds to ensure the bucket is available for the next steps
+              sleep 20
+            else
+              echo "Bucket exists, proceeding."
+            fi          
+
+      - name: Initialize Terraform (Main)
         working-directory: terraform
-        run: terraform init -backend=false
+        run: terraform init -backend-config="bucket=york-demo-tf-state-bucket-storage" -backend-config="key=terraform.tfstate" -backend-config="region=${{ secrets.AWS_REGION }}" -backend-config="encrypt=true"
 
       - name: Validate Terraform Code
         working-directory: terraform
@@ -47,3 +60,22 @@ jobs:
       - name: Plan Terraform Changes Prod (Only Plan, Do Not Apply)
         working-directory: terraform
         run: terraform plan -var-file=prod.tfvars
+
+      - name: Cleanup Mock Bucket
+        run: |
+          # Check if the S3 bucket exists
+          BUCKET_EXISTS=$(aws s3api head-bucket --bucket york-demo-tf-state-bucket-storage --region ${{ secrets.AWS_REGION }} 2>&1 || true)
+          
+          if [[ "$BUCKET_EXISTS" == *"NotFound"* ]]; then
+          echo "Mock bucket already cleaned up."
+          else
+          # List all object versions to check if the bucket is empty
+          OBJECT_VERSIONS=$(aws s3api list-object-versions --bucket york-demo-tf-state-bucket-storage --region ${{ secrets.AWS_REGION }} --query 'Versions[].[Key,VersionId]' --output text)
+          
+          if [ -z "$OBJECT_VERSIONS" ]; then
+              echo "Bucket is empty, deleting the bucket."
+              aws s3 rb s3://york-demo-tf-state-bucket-storage --force --region ${{ secrets.AWS_REGION }}
+          else
+              echo "Bucket is not empty, therefore already existed. skipping deletion."
+          fi
+          fi
