@@ -7,6 +7,7 @@ on:
 
 env:
   TF_VERSION: 1.5.7
+  BUCKET_NAME: york-demo-tf-state-bucket-storage-mock  # Global bucket name
 
 jobs:
   terraform:
@@ -28,18 +29,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Mock the S3 Bucket (Temporary)
+      - name: Create Temp S3 Backend (Temporary)
         run: |
-            # Mock the existence of the S3 bucket for the terraform plan phase
-            BUCKET_EXISTS=$(aws s3api head-bucket --bucket york-demo-tf-state-bucket-storage --region ${{ secrets.AWS_REGION }} 2>&1 || true)
-            if [[ "$BUCKET_EXISTS" == *"NotFound"* ]]; then
-              echo "Bucket does not exist, creating a mock bucket for planning."
-              aws s3 mb s3://york-demo-tf-state-bucket-storage --region ${{ secrets.AWS_REGION }}
-              # Wait for a few seconds to ensure the bucket is available for the next steps
-              sleep 30
-            else
-              echo "Bucket exists, proceeding."
-            fi          
+          aws s3 mb s3://"$BUCKET_NAME" --region ${{ secrets.AWS_REGION }}
+          # Wait for a few seconds to ensure the bucket is available for the next steps
+          sleep 30
 
       - name: Initialize Terraform (Main)
         working-directory: terraform
@@ -64,18 +58,25 @@ jobs:
       - name: Cleanup Mock Bucket
         run: |
           # Check if the S3 bucket exists
-          BUCKET_EXISTS=$(aws s3api head-bucket --bucket york-demo-tf-state-bucket-storage --region ${{ secrets.AWS_REGION }} 2>&1 || true)
-          
+          BUCKET_EXISTS=$(aws s3api head-bucket --bucket "$BUCKET_NAME" --region ${{ secrets.AWS_REGION }} 2>&1 || true)
+
           if [[ "$BUCKET_EXISTS" == *"NotFound"* ]]; then
-          echo "Mock bucket already cleaned up."
+            echo "Mock bucket already cleaned up or never created."
           else
-          # List all object versions to check if the bucket is empty
-          OBJECT_VERSIONS=$(aws s3api list-object-versions --bucket york-demo-tf-state-bucket-storage --region ${{ secrets.AWS_REGION }} --query 'Versions[].[Key,VersionId]' --output text)
-          
-          if [ -z "$OBJECT_VERSIONS" ]; then
-              echo "Bucket is empty, deleting the bucket."
-              aws s3 rb s3://york-demo-tf-state-bucket-storage --force --region ${{ secrets.AWS_REGION }}
-          else
-              echo "Bucket is not empty, therefore already existed. skipping deletion."
-          fi
+            # Delete all object versions if any exist
+            OBJECT_VERSIONS=$(aws s3api list-object-versions --bucket "$BUCKET_NAME" --query "Versions[].[Key,VersionId]" --output text || true)
+
+            if [[ -n "$OBJECT_VERSIONS" ]]; then
+              echo "$OBJECT_VERSIONS" | while read -r key version_id; do
+                echo "Deleting version $version_id of object $key..."
+                aws s3api delete-object --bucket "$BUCKET_NAME" --key "$key" --version-id "$version_id"
+              done
+              echo "All object versions deleted."
+            else
+              echo "No object versions found."
+            fi
+
+            # Remove the bucket after deleting objects
+            aws s3 rb s3://"$BUCKET_NAME" --force --region ${{ secrets.AWS_REGION }}
+            echo "Bucket removed."
           fi
