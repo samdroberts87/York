@@ -61,11 +61,20 @@ jobs:
 
       - name: Cleanup Mock Bucket
         run: |
-          # Cleanup the mock bucket after the plan
+          # Check if the S3 bucket exists
           BUCKET_EXISTS=$(aws s3api head-bucket --bucket york-demo-tf-state-bucket-storage --region ${{ secrets.AWS_REGION }} 2>&1 || true)
+          
           if [[ "$BUCKET_EXISTS" == *"NotFound"* ]]; then
-            echo "Mock bucket already cleaned up."
+          echo "Mock bucket already cleaned up."
           else
-            echo "Cleaning up mock bucket."
-            aws s3 rb s3://york-demo-tf-state-bucket-storage --force --region ${{ secrets.AWS_REGION }}
+          # List all object versions to check if the bucket is empty
+          OBJECT_VERSIONS=$(aws s3api list-object-versions --bucket york-demo-tf-state-bucket-storage --region ${{ secrets.AWS_REGION }} --query 'Versions[].[Key,VersionId]' --output text)
+          
+          if [ -z "$OBJECT_VERSIONS" ]; then
+              echo "Bucket is empty, deleting the bucket."
+              aws s3 rb s3://york-demo-tf-state-bucket-storage --force --region ${{ secrets.AWS_REGION }}
+          else
+              echo "Bucket is not empty, therefore already existed. skipping deletion."
           fi
+          fi
+
