@@ -1,5 +1,0 @@
-resource "aws_key_pair" "ssh_key" {
-  key_name   = "github-ssh-key"
-  public_key = var.ssh_public_key
-}
-

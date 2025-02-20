@@ -3,7 +3,8 @@ resource "aws_instance" "web" {
   instance_type = var.instance_type   # Set via the environment-specific tfvars file
   subnet_id     = aws_subnet.public.id
   security_groups = [aws_security_group.web_sg.id]
-  key_name      = var.key_pair
+  key_name = "york"
+
 
   tags = {
     Name = "yorkDemoWebServer"
