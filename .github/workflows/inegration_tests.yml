@@ -66,10 +66,12 @@ jobs:
             # Delete all object versions if any exist
             OBJECT_VERSIONS=$(aws s3api list-object-versions --bucket "$BUCKET_NAME" --query "Versions[].[Key,VersionId]" --output text || true)
 
-            if [[ -n "$OBJECT_VERSIONS" ]]; then
+            if [[ -n "$OBJECT_VERSIONS" && "$OBJECT_VERSIONS" != "None" ]]; then
               echo "$OBJECT_VERSIONS" | while read -r key version_id; do
-                echo "Deleting version $version_id of object $key..."
-                aws s3api delete-object --bucket "$BUCKET_NAME" --key "$key" --version-id "$version_id"
+                if [[ -n "$key" && -n "$version_id" ]]; then
+                  echo "Deleting version $version_id of object $key..."
+                  aws s3api delete-object --bucket "$BUCKET_NAME" --key "$key" --version-id "$version_id"
+                fi
               done
               echo "All object versions deleted."
             else
@@ -80,3 +82,4 @@ jobs:
             aws s3 rb s3://"$BUCKET_NAME" --force --region ${{ secrets.AWS_REGION }}
             echo "Bucket removed."
           fi
+
