@@ -42,11 +42,11 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Initialize Terraform (Backend)
-        working-directory: terraform-backend
+        working-directory: terraform-backend/terraform-backend
         run: terraform init
 
       - name: Apply Terraform (Create Backend)
-        working-directory: terraform-backend
+        working-directory: terraform-backend/terraform-backend
         run: terraform apply -auto-approve
 
   terraform:
