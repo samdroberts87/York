@@ -4,7 +4,6 @@ BUCKET_NAME="york-demo-tf-state-bucket-storage"
 
 BACKEND_PATH="/Users/sam/Developer/york_uni/terraform-backend"
 
-# Disable pagination with --no-paginate
 aws s3api list-object-versions --bucket "$BUCKET_NAME" --query "Versions[].[Key,VersionId]" --output text --no-paginate | \
   awk '{print $1, $2}' | \
   while read -r key version_id; do
