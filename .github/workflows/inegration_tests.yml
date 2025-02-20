@@ -47,9 +47,17 @@ jobs:
         working-directory: terraform
         run: terraform validate
 
-      - name: Plan Terraform Changes (Only Plan, Do Not Apply)
+      - name: Plan Terraform Changes Dev (Only Plan, Do Not Apply)
         working-directory: terraform
-        run: terraform plan -var-file=${{ github.event.inputs.environment }}.tfvars
+        run: terraform plan -var-file=dev.tfvars
+
+      - name: Plan Terraform Changes Staging (Only Plan, Do Not Apply)
+        working-directory: terraform
+        run: terraform plan -var-file=staging.tfvars
+
+      - name: Plan Terraform Changes Prod (Only Plan, Do Not Apply)
+        working-directory: terraform
+        run: terraform plan -var-file=prod.tfvars
 
       - name: Cleanup Mock Bucket
         run: |
