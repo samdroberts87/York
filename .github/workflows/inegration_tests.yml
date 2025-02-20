@@ -28,20 +28,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Mock the S3 Bucket (Temporary)
+        run: |
+            # Mock the existence of the S3 bucket for the terraform plan phase
+            BUCKET_EXISTS=$(aws s3api head-bucket --bucket york-demo-tf-state-bucket-storage --region ${{ secrets.AWS_REGION }} 2>&1 || true)
+            if [[ "$BUCKET_EXISTS" == *"NotFound"* ]]; then
+              echo "Bucket does not exist, creating a mock bucket for planning."
+              aws s3 mb s3://york-demo-tf-state-bucket-storage --region ${{ secrets.AWS_REGION }}
+            else
+              echo "Bucket exists, proceeding."
+            fi          
+
       - name: Initialize Terraform (Main)
         working-directory: terraform
         run: terraform init -backend-config="bucket=york-demo-tf-state-bucket-storage" -backend-config="key=terraform.tfstate" -backend-config="region=${{ secrets.AWS_REGION }}" -backend-config="encrypt=true"
-
-      - name: Mock the S3 Bucket (Temporary)
-        run: |
-          # Mock the existence of the S3 bucket for the terraform plan phase
-          BUCKET_EXISTS=$(aws s3api head-bucket --bucket york-demo-tf-state-bucket-storage --region ${{ secrets.AWS_REGION }} 2>&1 || true)
-          if [[ "$BUCKET_EXISTS" == *"NotFound"* ]]; then
-            echo "Bucket does not exist, creating a mock bucket for planning."
-            aws s3 mb s3://york-demo-tf-state-bucket-storage --region ${{ secrets.AWS_REGION }}
-          else
-            echo "Bucket exists, proceeding."
-          fi
 
       - name: Validate Terraform Code
         working-directory: terraform
