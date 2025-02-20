@@ -36,7 +36,7 @@ jobs:
               echo "Bucket does not exist, creating a mock bucket for planning."
               aws s3 mb s3://york-demo-tf-state-bucket-storage --region ${{ secrets.AWS_REGION }}
               # Wait for a few seconds to ensure the bucket is available for the next steps
-              sleep 20
+              sleep 30
             else
               echo "Bucket exists, proceeding."
             fi          
