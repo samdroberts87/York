@@ -39,7 +39,6 @@ jobs:
         working-directory: terraform
         run: terraform init -backend-config="bucket=${{ env.BUCKET_NAME }}" -backend-config="key=terraform.tfstate" -backend-config="region=${{ secrets.AWS_REGION }}" -backend-config="encrypt=true"
   
-
       - name: Validate Terraform Code
         working-directory: terraform
         run: terraform validate
