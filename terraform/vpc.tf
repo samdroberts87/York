@@ -19,7 +19,7 @@ resource "aws_subnet" "private" {
 }
 
 # Security Group for Public EC2 (Public Server)
-resource "aws_security_group" "public" {
+resource "aws_security_group" "public_sg" {
   name   = "public-sg"
   vpc_id = aws_vpc.main.id
 
