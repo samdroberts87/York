@@ -38,8 +38,8 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Initialize Terraform (Main Infra)
-        working-directory: terraform/terraform
-        run: terraform init
+        working-directory: terraform
+        run: terraform init -backend-config="bucket=york-demo-tf-state-bucket-storage" -backend-config="key=terraform.tfstate" -backend-config="region=${{ secrets.AWS_REGION }}" -backend-config="encrypt=true"
 
       - name: Destroy Terraform Resources (Main Infra)
         working-directory: terraform/terraform
