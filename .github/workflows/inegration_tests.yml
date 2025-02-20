@@ -33,7 +33,7 @@ jobs:
         run: |
           aws s3 mb s3://"$BUCKET_NAME" --region ${{ secrets.AWS_REGION }}
           # Wait for a few seconds to ensure the bucket is available for the next steps
-          sleep 30
+          sleep 90
 
       - name: Initialize Terraform (Main)
         working-directory: terraform
