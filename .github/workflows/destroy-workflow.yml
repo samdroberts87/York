@@ -38,9 +38,9 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Initialize Terraform (Main Infra)
-        working-directory: terraform
+        working-directory: terraform/terraform
         run: terraform init
 
       - name: Destroy Terraform Resources (Main Infra)
-        working-directory: terraform
+        working-directory: terraform/terraform
         run: terraform destroy -auto-approve -var-file=terraform/${{ github.event.inputs.environment }}.tfvars
