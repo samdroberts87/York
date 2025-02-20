@@ -38,7 +38,7 @@ jobs:
       - name: Initialize Terraform (Main)
         working-directory: terraform
         run: terraform init -backend-config="bucket=${{ env.BUCKET_NAME }}" -backend-config="key=terraform.tfstate" -backend-config="region=${{ secrets.AWS_REGION }}" -backend-config="encrypt=true"
-
+  
       - name: Validate Terraform Code
         working-directory: terraform
         run: terraform validate
@@ -46,17 +46,14 @@ jobs:
       - name: Plan Terraform Changes Dev
         working-directory: terraform
         run: terraform plan -var-file=dev.tfvars
-        continue-on-error: true
 
       - name: Plan Terraform Changes Staging
         working-directory: terraform
         run: terraform plan -var-file=staging.tfvars
-        continue-on-error: true
 
       - name: Plan Terraform Changes Prod
         working-directory: terraform
         run: terraform plan -var-file=prod.tfvars
-        continue-on-error: true
 
       - name: Cleanup Mock Bucket
         run: |
@@ -85,4 +82,4 @@ jobs:
             aws s3 rb s3://"$BUCKET_NAME" --force --region ${{ secrets.AWS_REGION }}
             echo "Bucket removed."
           fi
-        continue-on-error: true
+
