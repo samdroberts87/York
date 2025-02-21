@@ -26,9 +26,6 @@ jobs:
         with:
           path: terraform-backend
 
-      - name: List files in terraform-backend
-        run: ls -al terraform-backend/terraform-backend
-
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
