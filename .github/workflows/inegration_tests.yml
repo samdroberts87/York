@@ -8,6 +8,7 @@ on:
 env:
   TF_VERSION: 1.5.7
   BUCKET_NAME: york-demo-tf-state-bucket-storage-mock
+  AWS_ROLE_ARN: ${{ secrets.TFDEV_ROLE_ARN }} # Always assume the Dev role
 
 jobs:
   terraform:
@@ -25,20 +26,25 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-session-name: GitHubActionsSession
+          aws-region: ${{ secrets.AWS_REGION }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Create Temp S3 Backend (Temporary)
         run: |
-          aws s3 mb s3://"$BUCKET_NAME" --region ${{ secrets.AWS_REGION }}
-          # Wait for a few seconds to ensure the bucket is available for the next steps
-          sleep 90
+          if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
+            echo "Bucket already exists."
+          else
+            aws s3 mb s3://"$BUCKET_NAME" --region ${{ secrets.AWS_REGION }}
+            echo "Bucket created."
+          fi
 
       - name: Initialize Terraform (Main)
         working-directory: terraform
         run: terraform init -backend-config="bucket=${{ env.BUCKET_NAME }}" -backend-config="key=terraform.tfstate" -backend-config="region=${{ secrets.AWS_REGION }}" -backend-config="encrypt=true"
-  
+
       - name: Validate Terraform Code
         working-directory: terraform
         run: terraform validate
@@ -57,29 +63,10 @@ jobs:
 
       - name: Cleanup Mock Bucket
         run: |
-          # Check if the S3 bucket exists
-          BUCKET_EXISTS=$(aws s3api head-bucket --bucket "$BUCKET_NAME" --region ${{ secrets.AWS_REGION }} 2>&1 || true)
-
-          if [[ "$BUCKET_EXISTS" == *"NotFound"* ]]; then
-            echo "Mock bucket already cleaned up or never created."
+          if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
+            aws s3 rm s3://"$BUCKET_NAME" --recursive
+            aws s3 rb s3://"$BUCKET_NAME" --force
+            echo "Mock bucket deleted."
           else
-            # Delete all object versions if any exist
-            OBJECT_VERSIONS=$(aws s3api list-object-versions --bucket "$BUCKET_NAME" --query "Versions[].[Key,VersionId]" --output text || true)
-
-            if [[ -n "$OBJECT_VERSIONS" && "$OBJECT_VERSIONS" != "None" ]]; then
-              echo "$OBJECT_VERSIONS" | while read -r key version_id; do
-                if [[ -n "$key" && -n "$version_id" ]]; then
-                  echo "Deleting version $version_id of object $key..."
-                  aws s3api delete-object --bucket "$BUCKET_NAME" --key "$key" --version-id "$version_id"
-                fi
-              done
-              echo "All object versions deleted."
-            else
-              echo "No object versions found."
-            fi
-
-            # Remove the bucket after deleting objects
-            aws s3 rb s3://"$BUCKET_NAME" --force --region ${{ secrets.AWS_REGION }}
-            echo "Bucket removed."
+            echo "Mock bucket not found, skipping cleanup."
           fi
-
