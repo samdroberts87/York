@@ -22,18 +22,12 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Set AWS Credentials for Dev Role
-        id: set-aws-credentials
-        run: |
-          echo "AWS_ROLE_ARN=${{ secrets.TFDEV_ROLE_ARN }}" >> $GITHUB_ENV
-
-      - name: Assume Dev Role and Set Credentials
-        uses: aws-actions/aws-assume-role-action@v1
+      - name: Assume Dev Role and Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-arn: ${{ env.AWS_ROLE_ARN }}
+          role-to-assume: arn:aws:iam::605134473011:role/TerraformDevRole
           role-session-name: GitHubActionsSession
           aws-region: ${{ secrets.AWS_REGION }}
-        id: assume-role
 
       - name: Create Temp S3 Backend (Temporary)
         run: |
@@ -44,7 +38,7 @@ jobs:
       - name: Initialize Terraform (Main)
         working-directory: terraform
         run: terraform init -backend-config="bucket=${{ env.BUCKET_NAME }}" -backend-config="key=terraform.tfstate" -backend-config="region=${{ secrets.AWS_REGION }}" -backend-config="encrypt=true"
-  
+
       - name: Validate Terraform Code
         working-directory: terraform
         run: terraform validate

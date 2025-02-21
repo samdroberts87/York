@@ -31,24 +31,12 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Set AWS Credentials for the Environment
-        id: set-aws-credentials
-        run: |
-          if [ "${{ github.event.inputs.environment }}" == "dev" ]; then
-            echo "AWS_ROLE_ARN=${{ secrets.TFDEV_ROLE_ARN }}" >> $GITHUB_ENV
-          elif [ "${{ github.event.inputs.environment }}" == "staging" ]; then
-            echo "AWS_ROLE_ARN=${{ secrets.TFSTAGING_ROLE_ARN }}" >> $GITHUB_ENV
-          elif [ "${{ github.event.inputs.environment }}" == "prod" ]; then
-            echo "AWS_ROLE_ARN=${{ secrets.TFPROD_ROLE_ARN }}" >> $GITHUB_ENV
-          fi
-
-      - name: Assume Role and Set Credentials
-        uses: aws-actions/aws-assume-role-action@v1
+      - name: Assume Role and Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-arn: ${{ env.AWS_ROLE_ARN }}
+          role-to-assume: ${{ secrets[format('TF{0}_ROLE_ARN', github.event.inputs.environment)] }}
           role-session-name: GitHubActionsSession
           aws-region: ${{ secrets.AWS_REGION }}
-        id: assume-role
 
       - name: Initialize Terraform (Backend)
         working-directory: terraform-backend/terraform-backend
@@ -71,24 +59,12 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Set AWS Credentials for the Environment
-        id: set-aws-credentials
-        run: |
-          if [ "${{ github.event.inputs.environment }}" == "dev" ]; then
-            echo "AWS_ROLE_ARN=${{ secrets.TFDEV_ROLE_ARN }}" >> $GITHUB_ENV
-          elif [ "${{ github.event.inputs.environment }}" == "staging" ]; then
-            echo "AWS_ROLE_ARN=${{ secrets.TFSTAGING_ROLE_ARN }}" >> $GITHUB_ENV
-          elif [ "${{ github.event.inputs.environment }}" == "prod" ]; then
-            echo "AWS_ROLE_ARN=${{ secrets.TFPROD_ROLE_ARN }}" >> $GITHUB_ENV
-          fi
-
-      - name: Assume Role and Set Credentials
-        uses: aws-actions/aws-assume-role-action@v1
+      - name: Assume Role and Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-arn: ${{ env.AWS_ROLE_ARN }}
+          role-to-assume: ${{ secrets[format('TF{0}_ROLE_ARN', github.event.inputs.environment)] }}
           role-session-name: GitHubActionsSession
           aws-region: ${{ secrets.AWS_REGION }}
-        id: assume-role
 
       - name: Initialize Terraform (Main)
         working-directory: terraform
