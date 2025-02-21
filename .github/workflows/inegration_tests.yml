@@ -22,11 +22,11 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Assume Dev Role and Configure AWS Credentials
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: arn:aws:iam::605134473011:role/TerraformDevRole
-          role-session-name: GitHubActionsSession
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Create Temp S3 Backend (Temporary)
@@ -38,7 +38,7 @@ jobs:
       - name: Initialize Terraform (Main)
         working-directory: terraform
         run: terraform init -backend-config="bucket=${{ env.BUCKET_NAME }}" -backend-config="key=terraform.tfstate" -backend-config="region=${{ secrets.AWS_REGION }}" -backend-config="encrypt=true"
-
+  
       - name: Validate Terraform Code
         working-directory: terraform
         run: terraform validate
@@ -82,3 +82,4 @@ jobs:
             aws s3 rb s3://"$BUCKET_NAME" --force --region ${{ secrets.AWS_REGION }}
             echo "Bucket removed."
           fi
+
