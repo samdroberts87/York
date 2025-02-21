@@ -13,8 +13,8 @@ variable "instance_type" {
   type        = string
   default = "t2.micro"
     validation {
-      condition     = contains(["t2.micro", "t3.micro", "t3.medium", "t3.large"], var.instance_type)
-      error_message = "Invalid instance type! Use t2.micro,, t3.micro, t3.medium, or t3.large."
+      condition     = contains(["t2.micro", "t2.medium", "t2.large"], var.instance_type)
+      error_message = "Invalid instance type! Use t2.micro,, t2.medium, or t2.large."
     }
 }
 
