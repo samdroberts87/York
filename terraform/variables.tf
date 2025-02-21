@@ -17,4 +17,3 @@ variable "instance_type" {
       error_message = "Invalid instance type! Use t2.micro,, t2.medium, or t2.large."
     }
 }
-
