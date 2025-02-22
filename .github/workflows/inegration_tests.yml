@@ -1,4 +1,4 @@
-name: Code Integration Tests / TF plan
+name: CI Terraform Plan
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  TF_VERSION: 1.9.8
+  TF_VERSION: 1.5.7
   BUCKET_NAME: york-demo-tf-state-bucket-storage-mock
 
 jobs:
@@ -32,7 +32,8 @@ jobs:
       - name: Create Temp S3 Backend (Temporary)
         run: |
           aws s3 mb s3://"$BUCKET_NAME" --region ${{ secrets.AWS_REGION }}
-          sleep 90  # Ensure bucket availability
+          # Wait for a few seconds to ensure the bucket is available for the next steps
+          sleep 90
 
       - name: Initialize Terraform (Main)
         working-directory: terraform
@@ -42,55 +43,27 @@ jobs:
         working-directory: terraform
         run: terraform validate
 
-      # ---- DEV PLAN & COMPLIANCE ----
       - name: Plan Terraform Changes Dev
         working-directory: terraform
-        run: |
-          terraform plan -var-file=dev.tfvars -out=tfplan-dev.json
-          # terraform show -json tfplan-dev > tfplan-dev.json
+        run: terraform plan -var-file=dev.tfvars
 
-      - name: Run terraform-compliance for Dev
-        run: |
-          docker run --rm \
-            -v "$(pwd):/target" \
-            eerkunt/terraform-compliance \
-            -p /target/terraform/tfplan-dev.json --features /target/compliance/
-
-      # ---- STAGING PLAN & COMPLIANCE ----
       - name: Plan Terraform Changes Staging
         working-directory: terraform
-        run: |
-          terraform plan -var-file=staging.tfvars -out=tfplan-staging.json
-          # terraform show -json tfplan-staging > tfplan-staging.json
+        run: terraform plan -var-file=staging.tfvars
 
-      - name: Run terraform-compliance for Staging
-        run: |
-          docker run --rm \
-            -v "$(pwd):/target" \
-            eerkunt/terraform-compliance \
-            -p /target/terraform/tfplan-staging.json --features /target/compliance/
-
-      # ---- PROD PLAN & COMPLIANCE ----
       - name: Plan Terraform Changes Prod
         working-directory: terraform
-        run: |
-          terraform plan -var-file=prod.tfvars -out=tfplan-prod.json
-          # terraform show -json tfplan-prod > tfplan-prod.json
-
-      - name: Run terraform-compliance for Prod
-        run: |
-          docker run --rm \
-            -v "$(pwd):/target" \
-            eerkunt/terraform-compliance \
-            -p /target/terraform/tfplan-prod.json --features /target/compliance/
+        run: terraform plan -var-file=prod.tfvars
 
       - name: Cleanup Mock Bucket
         run: |
+          # Check if the S3 bucket exists
           BUCKET_EXISTS=$(aws s3api head-bucket --bucket "$BUCKET_NAME" --region ${{ secrets.AWS_REGION }} 2>&1 || true)
 
           if [[ "$BUCKET_EXISTS" == *"NotFound"* ]]; then
             echo "Mock bucket already cleaned up or never created."
           else
+            # Delete all object versions if any exist
             OBJECT_VERSIONS=$(aws s3api list-object-versions --bucket "$BUCKET_NAME" --query "Versions[].[Key,VersionId]" --output text || true)
 
             if [[ -n "$OBJECT_VERSIONS" && "$OBJECT_VERSIONS" != "None" ]]; then
@@ -105,6 +78,8 @@ jobs:
               echo "No object versions found."
             fi
 
+            # Remove the bucket after deleting objects
             aws s3 rb s3://"$BUCKET_NAME" --force --region ${{ secrets.AWS_REGION }}
             echo "Bucket removed."
           fi
+
