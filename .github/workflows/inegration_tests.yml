@@ -50,7 +50,6 @@ jobs:
           terraform show -json tfplan-dev > tfplan-dev.json
 
       - name: Run terraform-compliance for Dev
-        working-directory: terraform
         run: |
           docker run --rm \
             -v "$(pwd):/target" \
@@ -65,7 +64,6 @@ jobs:
           terraform show -json tfplan-staging > tfplan-staging.json
 
       - name: Run terraform-compliance for Staging
-        working-directory: terraform
         run: |
           docker run --rm \
             -v "$(pwd):/target" \
@@ -80,7 +78,6 @@ jobs:
           terraform show -json tfplan-prod > tfplan-prod.json
 
       - name: Run terraform-compliance for Prod
-        working-directory: terraform
         run: |
           docker run --rm \
             -v "$(pwd):/target" \
