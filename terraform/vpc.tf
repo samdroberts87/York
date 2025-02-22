@@ -20,14 +20,16 @@ resource "aws_subnet" "private" {
 
 # Security Group for Public EC2 (Public Server)
 resource "aws_security_group" "public_sg" {
-  name   = "public-sg"
-  vpc_id = aws_vpc.main.id
+  name        = "public-sg"
+  vpc_id      = aws_vpc.main.id
+  description = "Security group for public-facing instances"
 
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Allow SSH from anywhere (for demo)
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow SSH from anywhere (for demo)"
   }
 
   ingress {
@@ -35,6 +37,7 @@ resource "aws_security_group" "public_sg" {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow HTTP traffic from anywhere"
   }
 
   egress {
@@ -42,28 +45,30 @@ resource "aws_security_group" "public_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound traffic"
   }
 }
 
 # Security Group for Private EC2 (Restricted Access)
 resource "aws_security_group" "private_sg" {
-  name   = "private-sg"
-  vpc_id = aws_vpc.main.id
+  name        = "private-sg"
+  vpc_id      = aws_vpc.main.id
+  description = "Security group for private instances"
 
-  # Allow SSH only from the public EC2 instance
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = [aws_subnet.public.cidr_block]
+    description = "Allow SSH only from the public EC2 instance"
   }
 
-  # Allow ICMP (ping) from the Public EC2 instance
   ingress {
     from_port   = -1
     to_port     = -1
     protocol    = "icmp"
     cidr_blocks = [aws_subnet.public.cidr_block]
+    description = "Allow ICMP (ping) from the Public EC2 instance"
   }
 
   egress {
@@ -71,6 +76,7 @@ resource "aws_security_group" "private_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound traffic"
   }
 }
 
