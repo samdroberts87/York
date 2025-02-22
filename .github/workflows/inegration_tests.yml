@@ -46,8 +46,8 @@ jobs:
       - name: Plan Terraform Changes Dev
         working-directory: terraform
         run: |
-          terraform plan -var-file=dev.tfvars -out=tfplan-dev
-          terraform show -json tfplan-dev > tfplan-dev.json
+          terraform plan -var-file=dev.tfvars -out=tfplan-dev.json
+          # terraform show -json tfplan-dev > tfplan-dev.json
 
       - name: Run terraform-compliance for Dev
         run: |
@@ -60,8 +60,8 @@ jobs:
       - name: Plan Terraform Changes Staging
         working-directory: terraform
         run: |
-          terraform plan -var-file=staging.tfvars -out=tfplan-staging
-          terraform show -json tfplan-staging > tfplan-staging.json
+          terraform plan -var-file=staging.tfvars -out=tfplan-staging.json
+          # terraform show -json tfplan-staging > tfplan-staging.json
 
       - name: Run terraform-compliance for Staging
         run: |
@@ -74,8 +74,8 @@ jobs:
       - name: Plan Terraform Changes Prod
         working-directory: terraform
         run: |
-          terraform plan -var-file=prod.tfvars -out=tfplan-prod
-          terraform show -json tfplan-prod > tfplan-prod.json
+          terraform plan -var-file=prod.tfvars -out=tfplan-prod.json
+          # terraform show -json tfplan-prod > tfplan-prod.json
 
       - name: Run terraform-compliance for Prod
         run: |
