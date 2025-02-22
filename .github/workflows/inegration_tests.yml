@@ -1,4 +1,4 @@
-name: CI Terraform Plan
+name: Code Integration Tests / TF plan
 
 on:
   push:
