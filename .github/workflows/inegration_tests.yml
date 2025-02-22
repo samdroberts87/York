@@ -54,7 +54,7 @@ jobs:
           docker run --rm \
             -v "$(pwd):/target" \
             eerkunt/terraform-compliance \
-            -p /target/tfplan-dev.json --features /target/compliance/
+            -p /target/terraform/tfplan-dev.json --features /target/compliance/
 
       # ---- STAGING PLAN & COMPLIANCE ----
       - name: Plan Terraform Changes Staging
@@ -68,7 +68,7 @@ jobs:
           docker run --rm \
             -v "$(pwd):/target" \
             eerkunt/terraform-compliance \
-            -p /target/tfplan-staging.json --features /target/compliance/
+            -p /target/terraform/tfplan-staging.json --features /target/compliance/
 
       # ---- PROD PLAN & COMPLIANCE ----
       - name: Plan Terraform Changes Prod
@@ -82,7 +82,7 @@ jobs:
           docker run --rm \
             -v "$(pwd):/target" \
             eerkunt/terraform-compliance \
-            -p /target/tfplan-prod.json --features /target/compliance/
+            -p /target/terraform/tfplan-prod.json --features /target/compliance/
 
       - name: Cleanup Mock Bucket
         run: |
