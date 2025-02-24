@@ -51,9 +51,17 @@ jobs:
         working-directory: terraform
         run: terraform plan -var-file=dev.tfvars
 
+      - name: Terraform Test VPC
+        working-directory: terraform
+        run: terraform test -var-file=staging.tfvars
+
       - name: Plan Terraform Changes Staging
         working-directory: terraform
         run: terraform plan -var-file=staging.tfvars
+
+      - name: Terraform Test VPC
+        working-directory: terraform
+        run: terraform test -var-file=prod.tfvars
 
       - name: Plan Terraform Changes Prod
         working-directory: terraform
