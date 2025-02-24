@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
+import botocore
 from tear_down import delete_all_versions, delete_bucket
 
 class TestS3Cleanup(unittest.TestCase):
