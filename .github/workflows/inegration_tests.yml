@@ -45,7 +45,7 @@ jobs:
 
       - name: Terraform Test VPC
         working-directory: terraform
-        run: terraform test
+        run: terraform test -var-file=dev.tfvars
 
       - name: Plan Terraform Changes Dev
         working-directory: terraform
