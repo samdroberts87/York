@@ -43,6 +43,10 @@ jobs:
         working-directory: terraform
         run: terraform validate
 
+      - name: Terraform Test VPC
+        working-directory: terraform
+        run: terraform test
+
       - name: Plan Terraform Changes Dev
         working-directory: terraform
         run: terraform plan -var-file=dev.tfvars
