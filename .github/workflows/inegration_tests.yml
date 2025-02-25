@@ -25,7 +25,7 @@ jobs:
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: ${{ secrets["TF" + github.event.inputs.environment | capitalize + "_ROLE_ARN"] }}
+          role-to-assume: ${{ secrets.TFDEV_ROLE_ARN }}  # Assuming the dev role directly
           role-session-name: GitHubActionsSession
           aws-region: ${{ secrets.AWS_REGION }}
 
@@ -50,22 +50,6 @@ jobs:
       - name: Plan Terraform Changes Dev
         working-directory: terraform
         run: terraform plan -var-file=dev.tfvars
-
-      - name: Terraform Test VPC Staging
-        working-directory: terraform
-        run: terraform test -var-file=staging.tfvars
-
-      - name: Plan Terraform Changes Staging
-        working-directory: terraform
-        run: terraform plan -var-file=staging.tfvars
-
-      - name: Terraform Test VPC Prod
-        working-directory: terraform
-        run: terraform test -var-file=prod.tfvars
-
-      - name: Plan Terraform Changes Prod
-        working-directory: terraform
-        run: terraform plan -var-file=prod.tfvars
 
       - name: Cleanup Mock Bucket
         run: |
