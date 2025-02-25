@@ -32,15 +32,11 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
 
-      - name: Assume Dev Role
-        id: assume_dev_role
-        run: |
-          ROLE_ARN="${{ secrets.TFDEV_ROLE_ARN }}"  # Your dev role ARN
-          CREDS=$(aws sts assume-role --role-arn $ROLE_ARN --role-session-name TerraformSession)
-          export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r .Credentials.AccessKeyId)
-          export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r .Credentials.SecretAccessKey)
-          export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r .Credentials.SessionToken)
-          echo "Dev role assumed successfully."
+      - name: Assume Role Based on Environment
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: ${{ secrets.TFDEV_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Create Temp S3 Backend (Temporary)
         run: |
