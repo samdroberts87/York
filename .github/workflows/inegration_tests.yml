@@ -26,7 +26,7 @@ jobs:
       - name: Configure AWS Credentials (Assume GitHub Actions Role)
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: arn:aws:iam::605134473011:role/githubactions
+          role-to-assume: arn:aws:iam::605134473011:role/managementAccount
           aws-region: ${{ secrets.AWS_REGION }}                    # Your AWS region
           role-session-name: GitHubActionsSession
           audience: sts.amazonaws.com                              # Audience (optional)
