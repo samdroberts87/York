@@ -3,6 +3,6 @@ terraform {
 }
 
 provider "aws" {
-  region = getenv("AWS_REGION")
+  region = var.aws_region
 }
 
