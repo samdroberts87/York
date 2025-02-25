@@ -25,10 +25,11 @@ jobs:
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: ${{ secrets.TFDEV_ROLE_ARN }}
-          role-session-name: GitHubActionsSession
+          role-to-assume: ${{ secrets.TFDEV_ROLE_ARN }}  # ARN for dev role
           aws-region: ${{ secrets.AWS_REGION }}
-          id-token: ${{ steps.login.outputs.id-token }}
+          web-identity-token-file: ${{ github.token }}  # Use GitHub token as the web identity token
+          role-session-name: GitHubActionsSession
+
 
       - name: Create Temp S3 Backend (Temporary)
         run: |
