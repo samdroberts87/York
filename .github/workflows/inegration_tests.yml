@@ -25,15 +25,13 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      # Step 1: Assume the 'githubactions' role (management role)
-      - name: Configure AWS Credentials (Assume GitHub Actions Role)
+      - name: Configure AWS Credentials (Assume Management Account Role)
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: arn:aws:iam::605134473011:role/managementAccount
-          aws-region: ${{ secrets.AWS_REGION }}                    # Your AWS region
+          role-to-assume: ${{ secrets.MANAGEMENT_ACCOUNT }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
 
-      # Step 2: Assume the 'dev' role (target role)
       - name: Assume Dev Role
         id: assume_dev_role
         run: |
@@ -44,7 +42,6 @@ jobs:
           export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r .Credentials.SessionToken)
           echo "Dev role assumed successfully."
 
-      # Step 3: Create Temp S3 Backend (Temporary)
       - name: Create Temp S3 Backend (Temporary)
         run: |
           aws s3 mb s3://"$BUCKET_NAME" --region ${{ secrets.AWS_REGION }}
