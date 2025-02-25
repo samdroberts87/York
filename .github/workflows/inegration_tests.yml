@@ -32,6 +32,7 @@ jobs:
           audience: sts.amazonaws.com                              # Audience (optional)
 
 
+
       # Step 2: Assume the 'dev' role (target role)
       - name: Assume Dev Role
         id: assume_dev_role
