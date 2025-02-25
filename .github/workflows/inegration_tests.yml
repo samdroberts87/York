@@ -11,6 +11,9 @@ env:
 
 jobs:
   terraform:
+    permissions:
+      id-token: write 
+      contents: read 
     name: Terraform VPC and EC2 Deployment Plan
     runs-on: ubuntu-latest
     steps:
@@ -28,8 +31,6 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::605134473011:role/managementAccount
           aws-region: ${{ secrets.AWS_REGION }}                    # Your AWS region
-          role-session-name: GitHubActionsSession
-          audience: sts.amazonaws.com                              # Audience (optional)
 
 
       # Step 2: Assume the 'dev' role (target role)
