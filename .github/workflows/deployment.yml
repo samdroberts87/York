@@ -73,19 +73,27 @@ jobs:
       - name: Assume Role Based on Environment
         id: assume_role
         run: |
-          if [ "${{ github.event.inputs.environment }}" == "dev" ]; then
+          GITHUB_ENVIRONMENT="${{ github.event.inputs.environment }}"
+          echo "Selected environment: ${GITHUB_ENVIRONMENT}"
+
+          if [ "$GITHUB_ENVIRONMENT" = "dev" ]; then
             ROLE_ARN="${{ secrets.TFDEV_ROLE_ARN }}"
-          elif [ "${{ github.event.inputs.environment }}" == "staging" ]; then
+          elif [ "$GITHUB_ENVIRONMENT" = "staging" ]; then
             ROLE_ARN="${{ secrets.TFSTAGING_ROLE_ARN }}"
-          elif [ "${{ github.event.inputs.environment }}" == "prod" ]; then
+          elif [ "$GITHUB_ENVIRONMENT" = "prod" ]; then
             ROLE_ARN="${{ secrets.TFPROD_ROLE_ARN }}"
+          else
+            echo "Error: Unknown environment: ${GITHUB_ENVIRONMENT}"
+            exit 1
           fi
 
-          echo "Assuming role: $ROLE_ARN"
+          echo "Assuming role for $GITHUB_ENVIRONMENT"
+          
           CREDS=$(aws sts assume-role --role-arn $ROLE_ARN --role-session-name TerraformSession)
-          export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r .Credentials.AccessKeyId)
-          export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r .Credentials.SecretAccessKey)
-          export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r .Credentials.SessionToken)
+          export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r .Credentials.AccessKeyId)
+          export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r .Credentials.SecretAccessKey)
+          export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r .Credentials.SessionToken)
+          
           echo "Role assumed successfully."
 
       - name: Initialize Terraform (Main)

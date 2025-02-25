@@ -35,9 +35,9 @@ jobs:
       - name: Assume Dev Role for Integration
         id: assume_role
         run: |
-          ROLE_ARN="${{ secrets.TFDEV_ROLE_ARN }}"  # Your dev role ARN
+          ROLE_ARN="${{ secrets.TFDEV_ROLE_ARN }}"
 
-          echo "Assuming role: $ROLE_ARN"
+          echo "Assuming dev role"
           CREDS=$(aws sts assume-role --role-arn $ROLE_ARN --role-session-name TerraformSession)
           export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r .Credentials.AccessKeyId)
           export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r .Credentials.SecretAccessKey)
