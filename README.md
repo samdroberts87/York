@@ -1,1 +1,1 @@
-![Architecture Diagram](assets/york.drawio.png)
+![Architecture Diagram](assets/york.drawio_new.png)
