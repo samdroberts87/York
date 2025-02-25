@@ -22,11 +22,11 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets["TF" + github.event.inputs.environment | capitalize + "_ROLE_ARN"] }}
+          role-session-name: GitHubActionsSession
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Create Temp S3 Backend (Temporary)
@@ -94,4 +94,3 @@ jobs:
             aws s3 rb s3://"$BUCKET_NAME" --force --region ${{ secrets.AWS_REGION }}
             echo "Bucket removed."
           fi
-
