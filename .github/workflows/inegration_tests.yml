@@ -22,19 +22,28 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      # - name: Debug GitHub Token
-      #   run: echo ${{ github.token }}
-
-
-      - name: Configure AWS Credentials (OIDC)
+      # Step 1: Assume the 'githubactions' role (management role)
+      - name: Configure AWS Credentials (Assume GitHub Actions Role)
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: ${{ secrets.TFDEV_ROLE_ARN }}  # Your role ARN for dev
-          aws-region: ${{ secrets.AWS_REGION }}         # Your AWS region
-          web-identity-token-file: ${{ github.token }}  # GitHub token as OIDC token
+          role-to-assume: ${{ secrets.TF_GITHUBACTIONS_ROLE_ARN }}  # GitHub Actions role ARN
+          aws-region: ${{ secrets.AWS_REGION }}                    # Your AWS region
+          web-identity-token-file: ${{ github.token }}             # GitHub token as OIDC token
           role-session-name: GitHubActionsSession
-          audience: sts.amazonaws.com                   # Audience (optional)
+          audience: sts.amazonaws.com                              # Audience (optional)
 
+      # Step 2: Assume the 'dev' role (target role)
+      - name: Assume Dev Role
+        id: assume_dev_role
+        run: |
+          ROLE_ARN="${{ secrets.TFDEV_ROLE_ARN }}"  # Your dev role ARN
+          CREDS=$(aws sts assume-role --role-arn $ROLE_ARN --role-session-name TerraformSession)
+          export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r .Credentials.AccessKeyId)
+          export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r .Credentials.SecretAccessKey)
+          export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r .Credentials.SessionToken)
+          echo "Dev role assumed successfully."
+
+      # Step 3: Create Temp S3 Backend (Temporary)
       - name: Create Temp S3 Backend (Temporary)
         run: |
           aws s3 mb s3://"$BUCKET_NAME" --region ${{ secrets.AWS_REGION }}
