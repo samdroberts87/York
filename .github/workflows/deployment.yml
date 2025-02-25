@@ -65,10 +65,22 @@ jobs:
           terraform_version: ${{ env.TF_VERSION }}
 
       - name: Assume Role Based on Environment
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: ${{ secrets["TF" + github.event.inputs.environment | capitalize + "_ROLE_ARN"] }}
-          aws-region: ${{ secrets.AWS_REGION }}
+        id: assume_role
+        run: |
+          if [ "${{ github.event.inputs.environment }}" == "dev" ]; then
+            ROLE_ARN="${{ secrets.TFDEV_ROLE_ARN }}"
+          elif [ "${{ github.event.inputs.environment }}" == "staging" ]; then
+            ROLE_ARN="${{ secrets.TFSTAGING_ROLE_ARN }}"
+          elif [ "${{ github.event.inputs.environment }}" == "prod" ]; then
+            ROLE_ARN="${{ secrets.TFPROD_ROLE_ARN }}"
+          fi
+
+          echo "Assuming role: $ROLE_ARN"
+          CREDS=$(aws sts assume-role --role-arn $ROLE_ARN --role-session-name TerraformSession)
+          export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r .Credentials.AccessKeyId)
+          export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r .Credentials.SecretAccessKey)
+          export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r .Credentials.SessionToken)
+          echo "Role assumed successfully."
 
       - name: Initialize Terraform (Main)
         working-directory: terraform

@@ -32,11 +32,17 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
 
-      - name: Assume Role Based on Environment
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: ${{ secrets.TFDEV_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Assume Dev Role for Integration
+        id: assume_role
+        run: |
+          ROLE_ARN="${{ secrets.TFDEV_ROLE_ARN }}"  # Your dev role ARN
+
+          echo "Assuming role: $ROLE_ARN"
+          CREDS=$(aws sts assume-role --role-arn $ROLE_ARN --role-session-name TerraformSession)
+          export AWS_ACCESS_KEY_ID=$(echo $CREDS | jq -r .Credentials.AccessKeyId)
+          export AWS_SECRET_ACCESS_KEY=$(echo $CREDS | jq -r .Credentials.SecretAccessKey)
+          export AWS_SESSION_TOKEN=$(echo $CREDS | jq -r .Credentials.SessionToken)
+          echo "Dev role assumed successfully."
 
       - name: Create Temp S3 Backend (Temporary)
         run: |
@@ -52,7 +58,7 @@ jobs:
         working-directory: terraform
         run: terraform validate
 
-      - name: Terraform Test VPC Dev
+      - name: Terraform Test VPC And EC2
         working-directory: terraform
         run: terraform test -var-file=dev.tfvars
 
