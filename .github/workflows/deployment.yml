@@ -64,6 +64,12 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
+      - name: Configure AWS Credentials (Assume Management Account Role)
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: ${{ secrets.MANAGEMENT_ACCOUNT }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Assume Role Based on Environment
         id: assume_role
         run: |
