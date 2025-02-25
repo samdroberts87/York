@@ -28,9 +28,9 @@ jobs:
         with:
           role-to-assume: ${{ secrets.TF_GITHUBACTIONS_ROLE_ARN }}  # GitHub Actions role ARN
           aws-region: ${{ secrets.AWS_REGION }}                    # Your AWS region
-          web-identity-token-file: ${{ github.token }}             # GitHub token as OIDC token
           role-session-name: GitHubActionsSession
           audience: sts.amazonaws.com                              # Audience (optional)
+
 
       # Step 2: Assume the 'dev' role (target role)
       - name: Assume Dev Role
