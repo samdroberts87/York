@@ -22,8 +22,8 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
 
-      - name: Debug GitHub Token
-        run: echo ${{ github.token }}
+      # - name: Debug GitHub Token
+      #   run: echo ${{ github.token }}
 
 
       - name: Configure AWS Credentials (OIDC)
