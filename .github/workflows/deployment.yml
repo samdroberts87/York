@@ -98,7 +98,7 @@ jobs:
 
       - name: Initialize Terraform (Main)
         working-directory: terraform
-        run: terraform init -backend-config="bucket=york-demo-tf-state-bucket-storage" -backend-config="key=terraform.tfstate" -backend-config="region=${{ secrets.AWS_REGION }}" -backend-config="encrypt=true"
+        run: terraform init -backend-config="bucket=yorkshire-demo-tf-state-bucket-storage" -backend-config="key=terraform.tfstate" -backend-config="region=${{ secrets.AWS_REGION }}" -backend-config="encrypt=true"
 
       - name: Validate Terraform Code
         working-directory: terraform

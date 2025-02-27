@@ -1,7 +1,7 @@
 import boto3
 import botocore
 
-BUCKET_NAME = "york-demo-tf-state-bucket-storage"
+BUCKET_NAME = "yorkshire-demo-tf-state-bucket-storage"
 
 
 def main():
